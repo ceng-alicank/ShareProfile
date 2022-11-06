@@ -1,7 +1,7 @@
 # ShareProfile
 
 <h1> ShareProfile , an application thats you can share your profile </h1>
-<h1> - This project is developed by Onion Architecture </h1>
+<h1> - This project is developed with Onion Architecture </h1>
 
 <h4>  The Technologies used in this project are  </h4>
 
