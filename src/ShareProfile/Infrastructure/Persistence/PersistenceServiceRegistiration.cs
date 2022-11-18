@@ -21,7 +21,7 @@ namespace Persistence
             services.AddScoped<IUserProfileRepository , UserProfileRepository>();
             services.AddScoped<IOperationClaimRepository, OperationClaimRepository>();
             services.AddScoped<IRefreshTokenRepository , RefreshTokenRepository>();
-            services.AddScoped<ICacheService, CacheService>();
+            services.AddScoped<ICacheService, RedisCacheService>();
 
 
         }

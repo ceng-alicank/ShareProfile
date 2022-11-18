@@ -1,5 +1,6 @@
 ﻿using Application.Services.CachingService;
 using Application.Services.Repositories;
+using Application.Wrappers;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
@@ -8,7 +9,7 @@ using System.Text;
 
 namespace Application.Features.UserProfiles.Commands.UpdateUserProfileCommand
 {
-    public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommandRequest, UpdateUserProfileCommandResponse>
+    public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommandRequest, Response<UpdateUserProfileCommandResponse>>
     {
         private readonly IMapper _mapper;
         private readonly IUserProfileRepository _userProfileRepository;
@@ -21,22 +22,22 @@ namespace Application.Features.UserProfiles.Commands.UpdateUserProfileCommand
             _cacheService = cacheService;
         }
 
-        public async Task<UpdateUserProfileCommandResponse> Handle(UpdateUserProfileCommandRequest request, CancellationToken cancellationToken)
+        public async Task<Response<UpdateUserProfileCommandResponse>> Handle(UpdateUserProfileCommandRequest request, CancellationToken cancellationToken)
         {
-            await _cacheService.RemoveCache("getByUserIdUserProfile/" + request.UserId.ToString(), cancellationToken);
-
             var userProfileToCheck = await _userProfileRepository.GetAsync(p => p.UserId == request.UserId);
-            if (userProfileToCheck == null) return null;
+            if (userProfileToCheck != null)
+            {
+                userProfileToCheck.LinkedInProfile = request.LinkedInProfile;
+                userProfileToCheck.InstagramProfile = request.InstagramProfile;
+                var updatedUserProfile = await _userProfileRepository.UpdateAsync(userProfileToCheck);
+                var response = _mapper.Map<UpdateUserProfileCommandResponse>(updatedUserProfile);
+                byte[] serializeData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response));
+                await _cacheService.SetCache("getByUserIdUserProfile/" + request.UserId.ToString(), serializeData, cancellationToken);
+                await _cacheService.RemoveCache("getListUserProfile", cancellationToken);
+                return new Response<UpdateUserProfileCommandResponse>(true);
+            }
+            return new Response<UpdateUserProfileCommandResponse>("asdd");
 
-            userProfileToCheck.LinkedInProfile = request.LinkedInProfile;
-            userProfileToCheck.InstagramProfile = request.InstagramProfile;
-            var updatedUserProfile = await _userProfileRepository.UpdateAsync(userProfileToCheck);
-            var response = _mapper.Map<UpdateUserProfileCommandResponse>(updatedUserProfile);
-
-            byte[] serializeData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response));
-            await _cacheService.AddCache("getByUserIdUserProfile/" + request.UserId.ToString(), serializeData, cancellationToken);
-
-            return response;
 
         }
     }

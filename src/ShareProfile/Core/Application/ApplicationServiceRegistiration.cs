@@ -1,5 +1,4 @@
 ﻿using Application.Behaviors.Authorization;
-using Application.Behaviors.Caching;
 using Application.Behaviors.Logging;
 using Application.Behaviors.Validation;
 using Core.Security.JWT;
@@ -23,8 +22,6 @@ namespace Application
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CacheRemovingBehavior<,>));
         }
 
         //public static class ServiceTool

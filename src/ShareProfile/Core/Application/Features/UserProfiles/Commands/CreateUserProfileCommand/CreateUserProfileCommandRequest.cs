@@ -1,23 +1,24 @@
 ﻿using Application.Behaviors.Authorization;
-using Application.Behaviors.Caching;
+using Application.Wrappers;
+using FluentValidation;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Features.UserProfiles.Commands.CreateUserProfileCommand
 {
-    public class CreateUserProfileCommandRequest:IRequest<CreateUserProfileCommandResponse>,ISecuredRequest , ICacheRemoverRequest
+    public class CreateUserProfileCommandRequest:IRequest<Response<CreateUserProfileCommandResponse>>,ISecuredRequest
     {
         public string? LinkedInProfile { get; set; }
         public string? InstagramProfile { get; set; }
         public int UserId { get; set; }
         public string[] Roles { get; } = { "user","admin" };
-        public bool BypassCache { get; }
-
-        public string CacheKey => "getListUserProfile";
-        public TimeSpan? SlidingExpiration { get; }
+    }
+    public class CreateUserProfileCommandValidator : AbstractValidator<CreateUserProfileCommandRequest>
+    {
+        public CreateUserProfileCommandValidator()
+        {
+            RuleFor(u => u.InstagramProfile).NotEmpty();
+            RuleFor(u => u.UserId).NotEmpty();
+            RuleFor(u => u.LinkedInProfile).NotEmpty();
+        }
     }
 }

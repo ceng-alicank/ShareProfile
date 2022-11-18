@@ -1,4 +1,4 @@
-﻿using Application.Behaviors.Caching;
+﻿using Application.Wrappers;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -8,14 +8,8 @@ using System.Threading.Tasks;
 
 namespace Application.Features.UserProfiles.Queries.GetByUserIdUserProfileQuery
 {
-    public class GetByUserIdUserProfileQueryRequest:IRequest<GetByUserIdUserProfileQueryResponse>,ICachableRequest
+    public class GetByUserIdUserProfileQueryRequest:IRequest<Response<GetByUserIdUserProfileQueryResponse>>
     {
         public int UserId { get; set; }
-
-        public bool BypassCache { get; }
-
-        public string CacheKey => "getByUserIdUserProfile/" + UserId.ToString();
-
-        public TimeSpan? SlidingExpiration { get; }
     }
 }
