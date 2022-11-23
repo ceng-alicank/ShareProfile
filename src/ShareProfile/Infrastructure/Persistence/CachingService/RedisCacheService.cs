@@ -1,4 +1,4 @@
-﻿using Application.Services.CachingService;
+﻿using Application.Interfaces.Caching;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

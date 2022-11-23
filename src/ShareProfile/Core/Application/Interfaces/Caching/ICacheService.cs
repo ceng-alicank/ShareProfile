@@ -1,4 +1,4 @@
-﻿namespace Application.Services.CachingService
+﻿namespace Application.Interfaces.Caching
 {
     public interface ICacheService
     {

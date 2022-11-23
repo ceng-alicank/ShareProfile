@@ -1,4 +1,4 @@
-﻿using Application.Services.Repositories;
+﻿using Application.Interfaces.Repositories;
 using Application.Wrappers;
 using Core.Security.Hashing;
 using Core.Security.JWT;

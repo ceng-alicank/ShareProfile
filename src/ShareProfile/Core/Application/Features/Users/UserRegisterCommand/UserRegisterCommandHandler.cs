@@ -1,4 +1,4 @@
-﻿using Application.Services.Repositories;
+﻿using Application.Interfaces.Repositories;
 using Application.Wrappers;
 using AutoMapper;
 using Core.Security.Entities;

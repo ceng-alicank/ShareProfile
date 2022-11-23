@@ -1,6 +1,5 @@
-﻿using Application.Services.CachingService;
-using Application.Services.Repositories;
-using Microsoft.AspNetCore.Http;
+﻿using Application.Interfaces.Caching;
+using Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

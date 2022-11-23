@@ -1,6 +1,6 @@
 ﻿using Application.Features.UserProfiles.Models;
-using Application.Services.CachingService;
-using Application.Services.Repositories;
+using Application.Interfaces.Caching;
+using Application.Interfaces.Repositories;
 using Application.Wrappers;
 using AutoMapper;
 using Core.Persistence.Paging;

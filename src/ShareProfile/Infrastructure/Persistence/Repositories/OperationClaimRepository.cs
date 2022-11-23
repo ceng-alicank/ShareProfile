@@ -1,4 +1,4 @@
-﻿using Application.Services.Repositories;
+﻿using Application.Interfaces.Repositories;
 using Core.Persistence.Repositories;
 using Core.Security.Entities;
 using Domain.Entities;

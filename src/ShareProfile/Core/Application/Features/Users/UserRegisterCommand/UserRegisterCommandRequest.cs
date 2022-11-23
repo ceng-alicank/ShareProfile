@@ -1,14 +1,5 @@
-﻿using Application.Behaviors.Authorization;
-using Application.Services.Repositories;
-using Application.Wrappers;
-using AutoMapper;
-using Core.Security.JWT;
+﻿using Application.Wrappers;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Features.Users.UserRegisterCommand
 {
