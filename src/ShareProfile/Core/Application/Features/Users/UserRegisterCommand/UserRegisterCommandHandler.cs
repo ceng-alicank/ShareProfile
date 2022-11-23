@@ -1,4 +1,5 @@
 ﻿using Application.Services.Repositories;
+using Application.Wrappers;
 using AutoMapper;
 using Core.Security.Entities;
 using Core.Security.Hashing;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Users.UserRegisterCommand
 {
-    public class UserRegisterCommandHandler : IRequestHandler<UserRegisterCommandRequest, UserRegisterCommandResponse>
+    public class UserRegisterCommandHandler : IRequestHandler<UserRegisterCommandRequest, Response<UserRegisterCommandResponse>>
     {
         private readonly IUserRepository _userRepository;
         private readonly IOperationClaimRepository _operationClaimRepository;
@@ -27,29 +28,35 @@ namespace Application.Features.Users.UserRegisterCommand
             _refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<UserRegisterCommandResponse> Handle(UserRegisterCommandRequest request, CancellationToken cancellationToken)
+        public async Task<Response<UserRegisterCommandResponse>> Handle(UserRegisterCommandRequest request, CancellationToken cancellationToken)
         {
-            byte[] passwordHash;
-            byte[] passwordSalt;
-            HashingHelper.CreatePasswordHash(request.Password, out passwordHash, out passwordSalt);
-            var user = new User();
-            user.FirstName = request.FirstName;
-            user.Status = true;
-            user.LastName = request.Lastname;
-            user.Email = request.Email;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-            var addedUser = await _userRepository.AddAsync(user);
-            var roles = await _operationClaimRepository.GetListAsync(x => x.UserOperationClaims.Any(y => y.UserId == addedUser.Id));
-            var accessToken = _tokenHelper.CreateToken(addedUser, roles.Items);
-            var refreshToken = _tokenHelper.CreateRefreshToken(addedUser);
-            RefreshToken addedRefreshToken = await _refreshTokenRepository.AddAsync(refreshToken);
-            return new UserRegisterCommandResponse(
-                    accessToken: accessToken.Token,
-                    accessTokenExpiration: accessToken.Expiration,
-                    refreshToken: refreshToken.Token,
-                    refreshTokenExpiration: refreshToken.Expires
-                );
+            var userToCheck = await _userRepository.GetAsync(u => u.Email == request.Email);
+            if (userToCheck ==null)
+            {
+                byte[] passwordHash;
+                byte[] passwordSalt;
+                HashingHelper.CreatePasswordHash(request.Password, out passwordHash, out passwordSalt);
+                var user = new User();
+                user.FirstName = request.FirstName;
+                user.Status = true;
+                user.LastName = request.Lastname;
+                user.Email = request.Email;
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
+                var addedUser = await _userRepository.AddAsync(user);
+                var roles = await _operationClaimRepository.GetListAsync(x => x.UserOperationClaims.Any(y => y.UserId == addedUser.Id));
+                var accessToken = _tokenHelper.CreateToken(addedUser, roles.Items);
+                var refreshToken = _tokenHelper.CreateRefreshToken(addedUser);
+                RefreshToken addedRefreshToken = await _refreshTokenRepository.AddAsync(refreshToken);
+                var responseData = new UserRegisterCommandResponse(
+                        accessToken: accessToken.Token,
+                        accessTokenExpiration: accessToken.Expiration,
+                        refreshToken: refreshToken.Token,
+                        refreshTokenExpiration: refreshToken.Expires
+                    );
+                return new Response<UserRegisterCommandResponse>(responseData);
+            }
+            return new Response<UserRegisterCommandResponse>("this user already exists");
         }
     }
 }

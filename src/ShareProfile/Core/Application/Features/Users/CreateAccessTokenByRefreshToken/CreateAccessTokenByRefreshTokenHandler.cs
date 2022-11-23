@@ -1,4 +1,5 @@
 ﻿using Application.Services.Repositories;
+using Application.Wrappers;
 using Core.Security.JWT;
 using MediatR;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Users.CreateAccessTokenByRefreshToken
 {
-    public class CreateAccessTokenByRefreshTokenHandler : IRequestHandler<CreateAccessTokenByRefreshTokenRequest, CreateAccessTokenByRefreshTokenResponse>
+    public class CreateAccessTokenByRefreshTokenHandler : IRequestHandler<CreateAccessTokenByRefreshTokenRequest, Response<CreateAccessTokenByRefreshTokenResponse>>
     {
         private readonly IUserRepository _userRepository;
         private readonly IOperationClaimRepository _operationClaimRepository;
@@ -24,28 +25,27 @@ namespace Application.Features.Users.CreateAccessTokenByRefreshToken
             _refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<CreateAccessTokenByRefreshTokenResponse> Handle(CreateAccessTokenByRefreshTokenRequest request, CancellationToken cancellationToken)
+        public async Task<Response<CreateAccessTokenByRefreshTokenResponse>> Handle(CreateAccessTokenByRefreshTokenRequest request, CancellationToken cancellationToken)
         {
             var existRefreshToken = await _refreshTokenRepository.GetAsync(x => x.Token == request.Token);
-            if (existRefreshToken == null)
+            if (existRefreshToken != null)
             {
-                throw new Exception("Token Not Found");
+                var user = await _userRepository.GetAsync(u => u.Id == existRefreshToken.UserId);
+                if (user != null)
+                {
+                    if (existRefreshToken.Expires > DateTime.Now)
+                    {
+                        var roles = await _operationClaimRepository.GetListAsync(x => x.UserOperationClaims.Any(y => y.UserId == user.Id));
+                        var accessToken = _tokenHelper.CreateToken(user, roles.Items);
+                        var responseData = new CreateAccessTokenByRefreshTokenResponse(
+                                    accessToken: accessToken.Token,
+                                    accessTokenExpiration: accessToken.Expiration
+                                );
+                        return new Response<CreateAccessTokenByRefreshTokenResponse>(responseData);
+                    }
+                }
             }
-            var user = await _userRepository.GetAsync(u => u.Id == existRefreshToken.UserId);
-            if (user == null)
-            {
-                throw new Exception("User Not Found");
-            }
-            if (existRefreshToken.Expires < DateTime.Now)
-            {
-                throw new Exception("Refresh Token Expired");
-            }
-            var roles = await _operationClaimRepository.GetListAsync(x => x.UserOperationClaims.Any(y => y.UserId == user.Id));
-            var accessToken = _tokenHelper.CreateToken(user, roles.Items);
-            return new CreateAccessTokenByRefreshTokenResponse(
-                        accessToken: accessToken.Token,
-                        accessTokenExpiration: accessToken.Expiration
-                    );
+            return new Response<CreateAccessTokenByRefreshTokenResponse>("Token is not valid for any users");
         }
     }
 }

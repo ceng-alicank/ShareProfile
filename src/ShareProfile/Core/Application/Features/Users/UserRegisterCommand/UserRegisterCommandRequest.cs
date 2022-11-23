@@ -1,5 +1,6 @@
 ﻿using Application.Behaviors.Authorization;
 using Application.Services.Repositories;
+using Application.Wrappers;
 using AutoMapper;
 using Core.Security.JWT;
 using MediatR;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Users.UserRegisterCommand
 {
-    public class UserRegisterCommandRequest : IRequest<UserRegisterCommandResponse>
+    public class UserRegisterCommandRequest : IRequest<Response<UserRegisterCommandResponse>>
     {
         public string Email { get; set; }
         public string Password { get; set; }

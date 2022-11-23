@@ -1,18 +1,19 @@
 ﻿using Application.Services.Repositories;
+using Application.Wrappers;
 using Core.Security.Hashing;
 using Core.Security.JWT;
 using MediatR;
 
 namespace Application.Features.Users.UserLoginCommand
 {
-    public class UserLoginCommandRequestHandler : IRequestHandler<UserLoginCommandRequest,UserLoginCommandResponse>
+    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommandRequest,Response<UserLoginCommandResponse>>
     {
         private readonly IUserRepository _userRepository;
         private readonly IOperationClaimRepository _operationClaimRepository;
         private readonly ITokenHelper _tokenHelper;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
-        public UserLoginCommandRequestHandler
+        public UserLoginCommandHandler
             (IUserRepository userRepository, IOperationClaimRepository operationClaimRepository, ITokenHelper tokenHelper, IRefreshTokenRepository refreshTokenRepository)
         {
             _userRepository = userRepository;
@@ -21,7 +22,7 @@ namespace Application.Features.Users.UserLoginCommand
             _refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<UserLoginCommandResponse> Handle(UserLoginCommandRequest request, CancellationToken cancellationToken)
+        public async Task<Response<UserLoginCommandResponse>> Handle(UserLoginCommandRequest request, CancellationToken cancellationToken)
         {
             var usertocheck = await _userRepository.GetAsync(u => u.Email == request.Email);
             if (usertocheck != null)
@@ -35,15 +36,16 @@ namespace Application.Features.Users.UserLoginCommand
                     {
                         refreshToken = await _refreshTokenRepository.AddAsync(_tokenHelper.CreateRefreshToken(usertocheck));
                     }
-                    return new UserLoginCommandResponse(
+                    var responseData =  new UserLoginCommandResponse(
                     accessToken: accessToken.Token,
                     accessTokenExpiration: accessToken.Expiration,
                     refreshToken: refreshToken.Token,
                     refreshTokenExpiration: refreshToken.Expires
-                );
+                    );
+                    return new Response<UserLoginCommandResponse>(responseData);
                 }
             }
-            return null;
+            return new  Response<UserLoginCommandResponse>("Somethings have gone wrong");
         }
-    }//yok yok behaviour daki yere nu
+    }
 }
